@@ -5,6 +5,12 @@ import 'app/data/services/api_service.dart';
 import 'app/modules/auth/controllers/auth_controller.dart';
 import 'app/modules/auth/views/login_view.dart';
 import 'app/modules/auth/views/register_view.dart';
+import 'features/lapangan/controllers/customer_lapangan_controller.dart';
+import 'features/lapangan/controllers/owner_lapangan_controller.dart';
+import 'features/lapangan/views/customer_lapangan_detail_view.dart';
+import 'features/lapangan/views/customer_lapangan_list_view.dart';
+import 'features/lapangan/views/owner_lapangan_form_view.dart';
+import 'features/lapangan/views/owner_lapangan_list_view.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -27,29 +33,27 @@ class MyApp extends StatelessWidget {
       ),
       initialRoute: '/login',
       getPages: [
+        GetPage(name: '/login', page: () => const LoginView()),
+        GetPage(name: '/register', page: () => const RegisterView()),
         GetPage(
-          name: '/login',
-          page: () => const LoginView(),
+          name: '/pelanggan/dashboard',
+          page: () => const CustomerLapanganListView(),
+          binding: BindingsBuilder(() => Get.lazyPut(() => CustomerLapanganController())),
         ),
         GetPage(
-          name: '/register',
-          page: () => const RegisterView(),
+          name: '/customer/lapangan/detail',
+          page: () => const CustomerLapanganDetailView(),
+          binding: BindingsBuilder(() => Get.lazyPut(() => CustomerLapanganController())),
         ),
         GetPage(
           name: '/owner/dashboard',
-          page: () => const Scaffold(
-            body: Center(
-              child: Text('Owner Dashboard'),
-            ),
-          ),
+          page: () => const OwnerLapanganListView(),
+          binding: BindingsBuilder(() => Get.lazyPut(() => OwnerLapanganController())),
         ),
         GetPage(
-          name: '/pelanggan/dashboard',
-          page: () => const Scaffold(
-            body: Center(
-              child: Text('Pelanggan Dashboard'),
-            ),
-          ),
+          name: '/owner/lapangan/form',
+          page: () => const OwnerLapanganFormView(),
+          binding: BindingsBuilder(() => Get.lazyPut(() => OwnerLapanganController())),
         ),
       ],
     );
