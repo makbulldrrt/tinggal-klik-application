@@ -14,6 +14,10 @@ class OwnerDashboardView extends GetView<OwnerDashboardController> {
         title: const Text('Dashboard Owner', style: TextStyle(color: Colors.white)),
         actions: [
           IconButton(
+            icon: const Icon(Icons.account_balance_wallet, color: Colors.white),
+            onPressed: () => Get.toNamed('/owner/withdrawal'),
+          ),
+          IconButton(
             icon: const Icon(Icons.list, color: Colors.white),
             onPressed: () => Get.toNamed('/owner/lapangan'),
           ),

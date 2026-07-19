@@ -18,6 +18,8 @@ import 'features/dashboard/controllers/owner_dashboard_controller.dart';
 import 'features/dashboard/views/owner_dashboard_view.dart';
 import 'features/profile/controllers/profile_controller.dart';
 import 'features/profile/views/customer_profile_view.dart';
+import 'features/support/controllers/support_controller.dart';
+import 'features/support/views/owner_withdrawal_view.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -81,6 +83,11 @@ class MyApp extends StatelessWidget {
           name: '/customer/profile',
           page: () => const CustomerProfileView(),
           binding: BindingsBuilder(() => Get.lazyPut(() => ProfileController())),
+        ),
+        GetPage(
+          name: '/owner/withdrawal',
+          page: () => const OwnerWithdrawalView(),
+          binding: BindingsBuilder(() => Get.lazyPut(() => SupportController())),
         ),
       ],
     );

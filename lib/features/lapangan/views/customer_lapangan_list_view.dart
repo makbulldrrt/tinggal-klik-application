@@ -15,6 +15,10 @@ class CustomerLapanganListView extends GetView<CustomerLapanganController> {
         iconTheme: const IconThemeData(color: Colors.white),
         actions: [
           IconButton(
+            icon: const Icon(Icons.history, color: Colors.white),
+            onPressed: () => Get.toNamed('/customer/booking/history'),
+          ),
+          IconButton(
             icon: const Icon(Icons.person, color: Colors.white),
             onPressed: () => Get.toNamed('/customer/profile'),
           ),
