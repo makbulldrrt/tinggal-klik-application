@@ -72,6 +72,39 @@ class CustomerLapanganDetailView extends GetView<CustomerLapanganController> {
           ),
         );
       }),
+      bottomNavigationBar: Obx(() {
+        final detail = controller.selectedDetail.value;
+        if (detail == null) return const SizedBox.shrink();
+        return Container(
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+          decoration: const BoxDecoration(
+            color: Color(0xFF1E293B),
+            border: Border(top: BorderSide(color: Color(0xFF334155))),
+          ),
+          child: SizedBox(
+            height: 50,
+            child: ElevatedButton(
+              onPressed: () {
+                Get.toNamed('/customer/booking', arguments: detail);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF6366F1),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: const Text(
+                'Pesan Sekarang',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+        );
+      }),
     );
   }
 }

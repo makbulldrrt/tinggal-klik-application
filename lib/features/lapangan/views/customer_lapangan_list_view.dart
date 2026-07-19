@@ -13,6 +13,12 @@ class CustomerLapanganListView extends GetView<CustomerLapanganController> {
         backgroundColor: const Color(0xFF1E293B),
         title: const Text('Catalog Lapangan', style: TextStyle(color: Colors.white)),
         iconTheme: const IconThemeData(color: Colors.white),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.person, color: Colors.white),
+            onPressed: () => Get.toNamed('/customer/profile'),
+          ),
+        ],
       ),
       body: controller.obx(
         (data) => RefreshIndicator(
