@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../controllers/booking_controller.dart';
+import '../../support/controllers/support_controller.dart';
+import '../../shared/widgets/invoice_dialog.dart';
 
 class BookingHistoryView extends GetView<BookingController> {
   const BookingHistoryView({super.key});
@@ -10,11 +12,6 @@ class BookingHistoryView extends GetView<BookingController> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF0F172A),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF1E293B),
-        title: const Text('Riwayat Booking', style: TextStyle(color: Colors.white)),
-        iconTheme: const IconThemeData(color: Colors.white),
-      ),
       body: controller.obx(
         (data) => RefreshIndicator(
           onRefresh: controller.fetchHistory,
@@ -50,6 +47,7 @@ class _HistoryCard extends StatelessWidget {
   Color _statusColor(String? status) {
     switch (status) {
       case 'success':
+      case 'lunas':
         return const Color(0xFF16A34A);
       case 'pending':
         return const Color(0xFFD97706);
@@ -63,6 +61,7 @@ class _HistoryCard extends StatelessWidget {
   String _statusLabel(String? status) {
     switch (status) {
       case 'success':
+      case 'lunas':
         return 'Berhasil';
       case 'pending':
         return 'Menunggu';
@@ -85,7 +84,8 @@ class _HistoryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final String? status = item['status']?.toString();
+    final String? statusRaw = item['status_pembayaran']?.toString();
+    final String? status = statusRaw ?? item['status']?.toString();
     final lapangan = item['lapangan'] as Map<String, dynamic>?;
     final namaLapangan = lapangan?['nama']?.toString() ?? '-';
     final tanggal = (item['tanggal'] ?? item['tanggal_main'])?.toString() ?? '-';
@@ -95,15 +95,21 @@ class _HistoryCard extends StatelessWidget {
     final totalHarga = item['total_harga'];
     final snapUrl = item['snap_url']?.toString();
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 14),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1E293B),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF334155)),
-      ),
-      child: Column(
+    return GestureDetector(
+      onTap: () {
+        if (status == 'success' || status == 'lunas') {
+          InvoiceDialog.show(context, item);
+        }
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 14),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1E293B),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFF334155)),
+        ),
+        child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
@@ -168,11 +174,109 @@ class _HistoryCard extends StatelessWidget {
                     backgroundColor: const Color(0xFFD97706).withValues(alpha: 0.1),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                   ),
+                )
+              else if (status == 'success' || status == 'lunas')
+                TextButton.icon(
+                  onPressed: () => _showUlasanSheet(context, item),
+                  icon: const Icon(Icons.star, size: 16, color: Color(0xFFF59E0B)),
+                  label: const Text('Beri Ulasan',
+                      style: TextStyle(color: Color(0xFFF59E0B), fontSize: 13)),
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    backgroundColor: const Color(0xFFF59E0B).withValues(alpha: 0.1),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
                 ),
             ],
           ),
         ],
       ),
+    ));
+  }
+
+  void _showUlasanSheet(BuildContext context, Map<String, dynamic> item) {
+    final supportCtrl = Get.put(SupportController());
+    final rating = 5.obs;
+    final ulasanCtrl = TextEditingController();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: const Color(0xFF1E293B),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(ctx).viewInsets.bottom,
+            left: 20,
+            right: 20,
+            top: 24,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('Berikan Ulasan', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 20),
+              Obx(() => Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(5, (index) {
+                  return IconButton(
+                    icon: Icon(
+                      index < rating.value ? Icons.star : Icons.star_border,
+                      color: const Color(0xFFF59E0B),
+                      size: 32,
+                    ),
+                    onPressed: () => rating.value = index + 1,
+                  );
+                }),
+              )),
+              const SizedBox(height: 16),
+              TextField(
+                controller: ulasanCtrl,
+                style: const TextStyle(color: Colors.white),
+                maxLines: 3,
+                decoration: InputDecoration(
+                  hintText: 'Tulis ulasan Anda di sini...',
+                  hintStyle: const TextStyle(color: Color(0xFF64748B)),
+                  filled: true,
+                  fillColor: const Color(0xFF0F172A),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                ),
+              ),
+              const SizedBox(height: 24),
+              Obx(() {
+                final isLoading = supportCtrl.ulasanStatus.value.isLoading;
+                return SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF6366F1),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    onPressed: isLoading
+                        ? null
+                        : () async {
+                            final bookingId = item['id'] as int;
+                            final lapangId = item['lapangan_id'] as int;
+                            await supportCtrl.submitUlasan(bookingId, lapangId, rating.value, ulasanCtrl.text.trim());
+                            if (supportCtrl.ulasanStatus.value.isSuccess) {
+                              Get.back();
+                            }
+                          },
+                    child: isLoading
+                        ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                        : const Text('Kirim Ulasan', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                  ),
+                );
+              }),
+              const SizedBox(height: 24),
+            ],
+          ),
+        );
+      },
     );
   }
 }

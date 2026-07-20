@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'app/data/services/api_service.dart';
 import 'app/modules/auth/controllers/auth_controller.dart';
 import 'app/modules/auth/views/login_view.dart';
@@ -16,11 +17,20 @@ import 'features/booking/views/lapangan_booking_view.dart';
 import 'features/booking/views/booking_history_view.dart';
 import 'features/dashboard/controllers/owner_dashboard_controller.dart';
 import 'features/dashboard/views/owner_dashboard_view.dart';
+import 'features/support/controllers/support_controller.dart';
+import 'features/support/views/owner_withdrawal_view.dart';
+import 'features/auth/views/splash_view.dart';
+import 'features/auth/controllers/splash_controller.dart';
+import 'features/main_layout/views/customer_main_layout.dart';
+import 'features/main_layout/controllers/customer_main_controller.dart';
+import 'features/main_layout/views/owner_main_layout.dart';
+import 'features/main_layout/controllers/owner_main_controller.dart';
 import 'features/profile/controllers/profile_controller.dart';
 import 'features/profile/views/customer_profile_view.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await initializeDateFormatting('id_ID', null);
   await GetStorage.init();
   Get.put(ApiService(), permanent: true);
   Get.put(AuthController(), permanent: true);
@@ -35,11 +45,47 @@ class MyApp extends StatelessWidget {
     return GetMaterialApp(
       title: 'Tinggal Klik',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF6366F1)),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFF0F172A),
+        ),
+        primaryColor: const Color(0xFF0F172A),
+        scaffoldBackgroundColor: const Color(0xFFF8FAFC),
+        cardTheme: CardThemeData(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          elevation: 8,
+          shadowColor: Colors.black.withOpacity(0.04),
+        ),
         useMaterial3: true,
       ),
-      initialRoute: '/login',
+      initialRoute: '/splash',
       getPages: [
+        GetPage(
+          name: '/splash',
+          page: () => const SplashView(),
+          binding: BindingsBuilder(() => Get.lazyPut(() => SplashController())),
+        ),
+        GetPage(
+          name: '/customer-main',
+          page: () => const CustomerMainLayout(),
+          binding: BindingsBuilder(() {
+            Get.lazyPut(() => CustomerMainController());
+            Get.lazyPut(() => CustomerLapanganController());
+            Get.lazyPut(() => BookingController());
+            Get.lazyPut(() => ProfileController());
+          }),
+        ),
+        GetPage(
+          name: '/owner-main',
+          page: () => const OwnerMainLayout(),
+          binding: BindingsBuilder(() {
+            Get.lazyPut(() => OwnerMainController());
+            Get.lazyPut(() => OwnerDashboardController());
+            Get.lazyPut(() => OwnerLapanganController());
+            Get.lazyPut(() => SupportController());
+          }),
+        ),
         GetPage(name: '/login', page: () => const LoginView()),
         GetPage(name: '/register', page: () => const RegisterView()),
         GetPage(
@@ -79,8 +125,13 @@ class MyApp extends StatelessWidget {
         ),
         GetPage(
           name: '/customer/profile',
-          page: () => const CustomerProfileView(),
+          page: () => CustomerProfileView(),
           binding: BindingsBuilder(() => Get.lazyPut(() => ProfileController())),
+        ),
+        GetPage(
+          name: '/owner/withdrawal',
+          page: () => const OwnerWithdrawalView(),
+          binding: BindingsBuilder(() => Get.lazyPut(() => SupportController())),
         ),
       ],
     );

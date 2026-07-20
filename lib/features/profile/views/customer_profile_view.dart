@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart' as import_auth;
 import 'package:get/get.dart';
 import '../controllers/profile_controller.dart';
+import '../../../app/modules/auth/controllers/auth_controller.dart' as import_auth;
 
 class CustomerProfileView extends GetView<ProfileController> {
   const CustomerProfileView({super.key});
@@ -9,11 +11,6 @@ class CustomerProfileView extends GetView<ProfileController> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF0F172A),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF1E293B),
-        title: const Text('Profil Saya', style: TextStyle(color: Colors.white)),
-        iconTheme: const IconThemeData(color: Colors.white),
-      ),
       body: controller.obx(
         (user) {
           final nameCtrl = TextEditingController(text: user?['name']?.toString());
@@ -38,31 +35,41 @@ class CustomerProfileView extends GetView<ProfileController> {
                 const SizedBox(height: 16),
                 _buildField('Nomor HP', phoneCtrl, keyboardType: TextInputType.phone),
                 const SizedBox(height: 32),
-                Obx(() {
-                  final isLoading = controller.formStatus.value.isLoading;
-                  return ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF6366F1),
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
-                    onPressed: isLoading
-                        ? null
-                        : () {
-                            controller.updateProfile(
-                              nameCtrl.text.trim(),
-                              emailCtrl.text.trim(),
-                              phoneCtrl.text.trim(),
-                            );
-                          },
-                    child: isLoading
-                        ? const SizedBox(
-                            width: 20, height: 20,
-                            child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                          )
-                        : const Text('Simpan Perubahan', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                  );
-                }),
+                  Obx(() {
+                    final isLoading = controller.formStatus.value.isLoading;
+                    return ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF6366F1),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      onPressed: isLoading
+                          ? null
+                          : () {
+                              controller.updateProfile(
+                                nameCtrl.text.trim(),
+                                emailCtrl.text.trim(),
+                                phoneCtrl.text.trim(),
+                              );
+                            },
+                      child: isLoading
+                          ? const SizedBox(
+                              width: 20, height: 20,
+                              child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                            )
+                          : const Text('Simpan Perubahan', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                    );
+                  }),
+                  const SizedBox(height: 32),
+                  const Divider(color: Color(0xFF334155)),
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: const Icon(Icons.logout, color: Color(0xFFEF4444)),
+                    title: const Text('Keluar Akun', style: TextStyle(color: Color(0xFFEF4444), fontWeight: FontWeight.bold)),
+                    onTap: () {
+                      import_auth.Get.find<import_auth.AuthController>().logout();
+                    },
+                  ),
               ],
             ),
           );
