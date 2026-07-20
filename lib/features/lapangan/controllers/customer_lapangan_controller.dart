@@ -7,6 +7,8 @@ class CustomerLapanganController extends GetxController with StateMixin<List<dyn
   final LapanganService _service = LapanganService();
 
   final RxString searchRx = ''.obs;
+  final RxString selectedCategory = 'Semua'.obs;
+  final RxString selectedStarFilter = 'Semua'.obs;
   final ScrollController scrollController = ScrollController();
 
   int _page = 1;
@@ -42,19 +44,36 @@ class CustomerLapanganController extends GetxController with StateMixin<List<dyn
     super.onClose();
   }
 
+  void selectCategory(String category) {
+    selectedCategory.value = category;
+    _page = 1;
+    _hasMore = true;
+    fetchList();
+  }
+
+  void selectStarFilter(String filter) {
+    selectedStarFilter.value = filter;
+  }
+
+  Map<String, dynamic> _buildQuery() {
+    final params = <String, dynamic>{
+      'search': searchRx.value,
+      'page': _page,
+    };
+    if (selectedCategory.value != 'Semua') {
+      params['category'] = selectedCategory.value;
+    }
+    return params;
+  }
+
   Future<void> fetchList() async {
     change(null, status: RxStatus.loading());
     try {
-      final res = await _service.fetchCustomerLapangan(
-        queryParameters: {
-          'search': searchRx.value,
-          'page': _page,
-        },
-      );
-      
+      final res = await _service.fetchCustomerLapangan(queryParameters: _buildQuery());
+
       final responseData = res.data is Map ? res.data['data'] : res.data;
       final dataList = List<dynamic>.from(responseData as List);
-      
+
       if (res.data is Map) {
         _hasMore = _page < (res.data['last_page'] ?? 1);
       } else {
@@ -71,18 +90,13 @@ class CustomerLapanganController extends GetxController with StateMixin<List<dyn
     _isLoadingMore = true;
     change(state, status: RxStatus.loadingMore());
     _page++;
-    
+
     try {
-      final res = await _service.fetchCustomerLapangan(
-        queryParameters: {
-          'search': searchRx.value,
-          'page': _page,
-        },
-      );
-      
+      final res = await _service.fetchCustomerLapangan(queryParameters: _buildQuery());
+
       final responseData = res.data is Map ? res.data['data'] : res.data;
       final dataList = List<dynamic>.from(responseData as List);
-      
+
       if (res.data is Map) {
         _hasMore = _page < (res.data['last_page'] ?? 1);
       } else {
@@ -91,7 +105,7 @@ class CustomerLapanganController extends GetxController with StateMixin<List<dyn
 
       final currentData = state ?? [];
       currentData.addAll(dataList);
-      
+
       change(currentData, status: RxStatus.success());
     } on DioException catch (_) {
       _page--;

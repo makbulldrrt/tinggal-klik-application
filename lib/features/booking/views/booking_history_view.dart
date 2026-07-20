@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../controllers/booking_controller.dart';
 import '../../support/controllers/support_controller.dart';
+import '../../shared/widgets/invoice_dialog.dart';
 
 class BookingHistoryView extends GetView<BookingController> {
   const BookingHistoryView({super.key});
@@ -94,15 +95,21 @@ class _HistoryCard extends StatelessWidget {
     final totalHarga = item['total_harga'];
     final snapUrl = item['snap_url']?.toString();
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 14),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1E293B),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF334155)),
-      ),
-      child: Column(
+    return GestureDetector(
+      onTap: () {
+        if (status == 'success' || status == 'lunas') {
+          InvoiceDialog.show(context, item);
+        }
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 14),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1E293B),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFF334155)),
+        ),
+        child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
@@ -184,7 +191,7 @@ class _HistoryCard extends StatelessWidget {
           ),
         ],
       ),
-    );
+    ));
   }
 
   void _showUlasanSheet(BuildContext context, Map<String, dynamic> item) {

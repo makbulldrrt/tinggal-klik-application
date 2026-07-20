@@ -1,4 +1,6 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import '../controllers/owner_lapangan_controller.dart';
 
@@ -16,6 +18,7 @@ class OwnerLapanganFormView extends GetView<OwnerLapanganController> {
     final namaCtrl = TextEditingController(text: args?['nama']?.toString());
     final hargaCtrl = TextEditingController(text: args?['harga_per_jam']?.toString());
     final deskripsiCtrl = TextEditingController(text: args?['deskripsi']?.toString());
+    final lokasiCtrl = TextEditingController(text: args?['lokasi']?.toString());
     final selectedJenis = (args?['jenis']?.toString() ?? _jenisOptions.first).obs;
     final selectedStatus = (args?['status'] == true || args == null).obs;
 
@@ -75,6 +78,76 @@ class OwnerLapanganFormView extends GetView<OwnerLapanganController> {
                 style: const TextStyle(color: Colors.white),
                 decoration: _inputDecoration('Deskripsi (opsional)', Icons.description_outlined),
               ),
+              const SizedBox(height: 16),
+              Obx(() {
+                final picked = controller.pickedImage.value;
+                return GestureDetector(
+                  onTap: controller.pickImage,
+                  child: Container(
+                    height: 160,
+                    width: double.infinity,
+                    clipBehavior: Clip.hardEdge,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1E293B),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                        color: const Color(0xFF334155),
+                        width: 2,
+                      ),
+                    ),
+                    child: picked != null
+                        ? Stack(
+                            fit: StackFit.expand,
+                            children: [
+                              kIsWeb
+                                  ? Image.network(picked.path, fit: BoxFit.cover)
+                                  : Image.file(File(picked.path), fit: BoxFit.cover),
+                              Positioned(
+                                top: 8,
+                                right: 8,
+                                child: GestureDetector(
+                                  onTap: () => controller.pickedImage.value = null,
+                                  child: Container(
+                                    padding: const EdgeInsets.all(4),
+                                    decoration: const BoxDecoration(
+                                      color: Colors.black54,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(Icons.close, color: Colors.white, size: 20),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          )
+                        : const Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.add_a_photo_rounded, color: Color(0xFF64748B), size: 40),
+                              SizedBox(height: 8),
+                              Text('Unggah Foto Lapangan', style: TextStyle(color: Color(0xFF94A3B8), fontSize: 13)),
+                            ],
+                          ),
+                  ),
+                );
+              }),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: lokasiCtrl,
+                style: const TextStyle(color: Colors.white),
+                decoration: _inputDecoration('Alamat Lengkap / Lokasi Lapangan', Icons.location_on_outlined),
+                validator: (v) => (v == null || v.isEmpty) ? 'Lokasi tidak boleh kosong' : null,
+              ),
+              const SizedBox(height: 12),
+              OutlinedButton.icon(
+                onPressed: () => _showMapPicker(context, lokasiCtrl),
+                icon: const Icon(Icons.map_rounded, color: Color(0xFF10B981)),
+                label: const Text('Pilih Koordinat Peta (Maps)', style: TextStyle(color: Color(0xFF10B981))),
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  side: const BorderSide(color: Color(0xFF10B981)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                ),
+              ),
               const SizedBox(height: 20),
               Obx(
                 () => SwitchListTile(
@@ -104,9 +177,10 @@ class OwnerLapanganFormView extends GetView<OwnerLapanganController> {
                                 final data = {
                                   'nama': namaCtrl.text.trim(),
                                   'jenis': selectedJenis.value,
-                                  'harga_per_jam': int.parse(hargaCtrl.text.trim()),
+                                  'harga_per_jam': hargaCtrl.text.trim(),
                                   'deskripsi': deskripsiCtrl.text.trim().isEmpty ? null : deskripsiCtrl.text.trim(),
-                                  'status': selectedStatus.value,
+                                  'lokasi': lokasiCtrl.text.trim(),
+                                  'status': selectedStatus.value ? '1' : '0',
                                 };
                                 isEdit
                                     ? controller.editLapangan(args['id'] as int, data)
@@ -163,6 +237,79 @@ class OwnerLapanganFormView extends GetView<OwnerLapanganController> {
         borderSide: const BorderSide(color: Color(0xFFEF4444), width: 2),
       ),
       errorStyle: const TextStyle(color: Color(0xFFEF4444)),
+    );
+  }
+
+  void _showMapPicker(BuildContext context, TextEditingController lokasiCtrl) {
+    Get.dialog(
+      Dialog(
+        backgroundColor: const Color(0xFF1E293B),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('Pilih Titik Lokasi', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 16),
+              Container(
+                height: 200,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF334155),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFF475569)),
+                ),
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    GridView.builder(
+                      physics: const NeverScrollableScrollPhysics(),
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 5),
+                      itemCount: 25,
+                      itemBuilder: (_, __) => Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(color: const Color(0xFF475569).withOpacity(0.3)),
+                        ),
+                      ),
+                    ),
+                    const Icon(Icons.location_on, color: Color(0xFFEF4444), size: 48),
+                    Positioned(
+                      bottom: 8,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.black54,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Text(
+                          'Geser peta untuk menentukan titik',
+                          style: TextStyle(color: Colors.white, fontSize: 10),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    lokasiCtrl.text = 'Jl. Stadion Utama No. 12, Titik Koordinat: -6.1751, 106.8272';
+                    Get.back();
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF6366F1),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: const Text('Konfirmasi Lokasi', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'app/data/services/api_service.dart';
 import 'app/modules/auth/controllers/auth_controller.dart';
 import 'app/modules/auth/views/login_view.dart';
@@ -26,10 +27,10 @@ import 'features/main_layout/views/owner_main_layout.dart';
 import 'features/main_layout/controllers/owner_main_controller.dart';
 import 'features/profile/controllers/profile_controller.dart';
 import 'features/profile/views/customer_profile_view.dart';
-import 'features/booking/controllers/booking_controller.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await initializeDateFormatting('id_ID', null);
   await GetStorage.init();
   Get.put(ApiService(), permanent: true);
   Get.put(AuthController(), permanent: true);

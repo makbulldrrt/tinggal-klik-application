@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/owner_lapangan_controller.dart';
+import '../../../app/data/services/api_service.dart';
+
+const _kCategories = ['Semua', 'Futsal', 'Badminton', 'Tenis', 'Basket'];
 
 class OwnerLapanganListView extends GetView<OwnerLapanganController> {
   const OwnerLapanganListView({super.key});
@@ -15,33 +18,85 @@ class OwnerLapanganListView extends GetView<OwnerLapanganController> {
         icon: const Icon(Icons.add, color: Colors.white),
         label: const Text('Tambah', style: TextStyle(color: Colors.white)),
       ),
-      body: controller.obx(
-        (data) => RefreshIndicator(
-          onRefresh: controller.fetchList,
-          child: ListView.builder(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 80),
-            itemCount: data!.length,
-            itemBuilder: (_, i) => _OwnerLapanganCard(
-              item: data[i],
-              onEdit: () => Get.toNamed('/owner/lapangan/form', arguments: data[i]),
-              onDelete: () => _confirmDelete(context, data[i]['id'] as int),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+            child: TextField(
+              onChanged: (val) => controller.searchRx.value = val,
+              style: const TextStyle(color: Colors.white),
+              decoration: InputDecoration(
+                hintText: 'Cari nama lapangan...',
+                hintStyle: const TextStyle(color: Color(0xFF64748B)),
+                prefixIcon: const Icon(Icons.search, color: Color(0xFF94A3B8)),
+                filled: true,
+                fillColor: const Color(0xFF1E293B),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              ),
             ),
           ),
-        ),
-        onLoading: const Center(child: CircularProgressIndicator(color: Color(0xFF6366F1))),
-        onEmpty: const Center(
-          child: Text('Belum ada lapangan. Tambahkan sekarang!', style: TextStyle(color: Color(0xFF94A3B8))),
-        ),
-        onError: (err) => Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(err ?? 'Terjadi kesalahan.', style: const TextStyle(color: Color(0xFFEF4444))),
-              const SizedBox(height: 12),
-              ElevatedButton(onPressed: controller.fetchList, child: const Text('Coba Lagi')),
-            ],
+          const SizedBox(height: 10),
+          Obx(() => _CategoryFilterBar(
+            categories: _kCategories,
+            selected: controller.selectedCategory.value,
+            onSelect: controller.selectCategory,
+            accentColor: const Color(0xFF6366F1),
+          )),
+          const SizedBox(height: 8),
+          Expanded(
+            child: controller.obx(
+              (data) => AnimatedSwitcher(
+                duration: const Duration(milliseconds: 250),
+                child: RefreshIndicator(
+                  key: ValueKey(controller.selectedCategory.value),
+                  onRefresh: controller.fetchList,
+                  child: ListView.builder(
+                    controller: controller.scrollController,
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.only(left: 16, right: 16, bottom: 80),
+                    itemCount: data!.length + (controller.status.isLoadingMore ? 1 : 0),
+                    itemBuilder: (_, i) {
+                      if (i == data.length) {
+                        return const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 16),
+                          child: Center(
+                            child: SizedBox(
+                              width: 24, height: 24,
+                              child: CircularProgressIndicator(color: Color(0xFF6366F1), strokeWidth: 2),
+                            ),
+                          ),
+                        );
+                      }
+                      return _OwnerLapanganCard(
+                        item: data[i],
+                        onEdit: () => Get.toNamed('/owner/lapangan/form', arguments: data[i]),
+                        onDelete: () => _confirmDelete(context, data[i]['id'] as int),
+                      );
+                    },
+                  ),
+                ),
+              ),
+              onLoading: const Center(child: CircularProgressIndicator(color: Color(0xFF6366F1))),
+              onEmpty: const Center(
+                child: Text('Belum ada lapangan. Tambahkan sekarang!', style: TextStyle(color: Color(0xFF94A3B8))),
+              ),
+              onError: (err) => Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(err ?? 'Terjadi kesalahan.', style: const TextStyle(color: Color(0xFFEF4444))),
+                    const SizedBox(height: 12),
+                    ElevatedButton(onPressed: controller.fetchList, child: const Text('Coba Lagi')),
+                  ],
+                ),
+              ),
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -58,6 +113,63 @@ class OwnerLapanganListView extends GetView<OwnerLapanganController> {
         Get.back();
         controller.deleteLapangan(id);
       },
+    );
+  }
+}
+
+class _CategoryFilterBar extends StatelessWidget {
+  final List<String> categories;
+  final String selected;
+  final void Function(String) onSelect;
+  final Color accentColor;
+
+  const _CategoryFilterBar({
+    required this.categories,
+    required this.selected,
+    required this.onSelect,
+    required this.accentColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 38,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Row(
+          children: categories.map((cat) {
+            final isSelected = cat == selected;
+            return GestureDetector(
+              onTap: () => onSelect(cat),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                curve: Curves.easeOut,
+                margin: const EdgeInsets.only(right: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: isSelected ? accentColor : const Color(0xFF1E293B),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: isSelected ? accentColor : const Color(0xFF334155),
+                  ),
+                  boxShadow: isSelected
+                      ? [BoxShadow(color: accentColor.withOpacity(0.35), blurRadius: 8, offset: const Offset(0, 3))]
+                      : [],
+                ),
+                child: Text(
+                  cat,
+                  style: TextStyle(
+                    color: isSelected ? Colors.white : const Color(0xFF94A3B8),
+                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                    fontSize: 13,
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ),
     );
   }
 }
@@ -81,15 +193,28 @@ class _OwnerLapanganCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)]),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Icon(Icons.sports_soccer, color: Colors.white, size: 24),
-          ),
+          () {
+            final String? foto = item['foto']?.toString();
+            return Container(
+              width: 48,
+              height: 48,
+              clipBehavior: Clip.hardEdge,
+              decoration: BoxDecoration(
+                gradient: foto == null || foto.isEmpty
+                    ? const LinearGradient(colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)])
+                    : null,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: foto != null && foto.isNotEmpty
+                  ? Image.network(
+                      '${ApiService.storageUrl}$foto',
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) =>
+                          const Icon(Icons.sports_soccer, color: Colors.white, size: 24),
+                    )
+                  : const Icon(Icons.sports_soccer, color: Colors.white, size: 24),
+            );
+          }(),
           const SizedBox(width: 14),
           Expanded(
             child: Column(
