@@ -5,8 +5,8 @@ import '../../../app/data/services/api_service.dart';
 class LapanganService {
   final Dio _dio = Get.find<ApiService>().dio;
 
-  Future<Response> fetchCustomerLapangan() {
-    return _dio.get('/customer/lapangan');
+  Future<Response> fetchCustomerLapangan({Map<String, dynamic>? queryParameters}) {
+    return _dio.get('/customer/lapangan', queryParameters: queryParameters);
   }
 
   Future<Response> fetchCustomerLapanganDetail(int id) {

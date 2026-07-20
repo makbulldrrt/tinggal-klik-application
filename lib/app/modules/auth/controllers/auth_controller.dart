@@ -57,9 +57,9 @@ class AuthController extends GetxController {
       _box.write('role', role);
 
       if (role == 'owner') {
-        Get.offAllNamed('/owner/dashboard');
+        Get.offAllNamed('/owner-main');
       } else {
-        Get.offAllNamed('/pelanggan/dashboard');
+        Get.offAllNamed('/customer-main');
       }
     } on DioException catch (e) {
       final message = e.response?.data['message'] ?? 'Login gagal.';

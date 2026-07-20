@@ -9,20 +9,6 @@ class OwnerDashboardView extends GetView<OwnerDashboardController> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF0F172A),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF1E293B),
-        title: const Text('Dashboard Owner', style: TextStyle(color: Colors.white)),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.account_balance_wallet, color: Colors.white),
-            onPressed: () => Get.toNamed('/owner/withdrawal'),
-          ),
-          IconButton(
-            icon: const Icon(Icons.list, color: Colors.white),
-            onPressed: () => Get.toNamed('/owner/lapangan'),
-          ),
-        ],
-      ),
       body: controller.obx(
         (data) {
           final totalPendapatan = data?['total_pendapatan'] ?? 0;

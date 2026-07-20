@@ -9,11 +9,6 @@ class OwnerLapanganListView extends GetView<OwnerLapanganController> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF0F172A),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF1E293B),
-        title: const Text('Lapangan Saya', style: TextStyle(color: Colors.white)),
-        iconTheme: const IconThemeData(color: Colors.white),
-      ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => Get.toNamed('/owner/lapangan/form'),
         backgroundColor: const Color(0xFF6366F1),
