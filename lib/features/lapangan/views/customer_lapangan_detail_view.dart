@@ -27,12 +27,14 @@ class CustomerLapanganDetailView extends GetView<CustomerLapanganController> {
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFFFFFF),
+      backgroundColor: const Color(0xFF0F172A),
       body: Obx(() {
-        final data = controller.selectedDetail.value;
-        if (data == null || data.isEmpty) {
+        final rawData = controller.selectedDetail.value;
+        if (rawData == null || rawData.isEmpty) {
           return const Center(child: CircularProgressIndicator(color: Color(0xFF0066CC)));
         }
+        
+        final data = rawData.containsKey('data') && rawData['data'] is Map ? rawData['data'] as Map<String, dynamic> : rawData;
 
         final String name = data['nama_lapangan'] ?? data['nama'] ?? 'Venue Name';
         final String category = data['jenis_olahraga'] ?? data['jenis'] ?? 'Sport';
@@ -48,20 +50,20 @@ class CustomerLapanganDetailView extends GetView<CustomerLapanganController> {
               physics: const BouncingScrollPhysics(),
               slivers: [
                 SliverToBoxAdapter(
-                  child: AspectRatio(
-                    aspectRatio: 4 / 3,
+                  child: Container(
+                    height: 250,
+                    width: double.infinity,
+                    color: const Color(0xFF1E293B),
                     child: hasPhoto
                         ? Image.network(
                             imageUrl,
                             fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) => Container(
-                              color: const Color(0xFFF5F5F7),
-                              child: const Icon(Icons.sports_soccer, size: 80, color: Color(0xFF0066CC)),
+                            errorBuilder: (context, error, stackTrace) => const Center(
+                              child: Icon(Icons.image_not_supported, size: 80, color: Color(0xFF334155)),
                             ),
                           )
-                        : Container(
-                            color: const Color(0xFFF5F5F7),
-                            child: const Icon(Icons.sports_soccer, size: 80, color: Color(0xFF0066CC)),
+                        : const Center(
+                            child: Icon(Icons.sports_soccer, size: 80, color: Color(0xFF334155)),
                           ),
                   ),
                 ),

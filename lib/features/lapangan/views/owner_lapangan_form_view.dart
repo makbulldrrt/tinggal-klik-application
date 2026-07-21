@@ -1,13 +1,19 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:get/get.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 import '../controllers/owner_lapangan_controller.dart';
 
 class OwnerLapanganFormView extends GetView<OwnerLapanganController> {
   const OwnerLapanganFormView({super.key});
 
-  static const _jenisOptions = ['Futsal', 'Badminton', 'Basket'];
+  static const _jenisOptions = [
+    'Futsal', 'Badminton', 'Basket', 'Tennis', 'Voli', 
+    'Golf', 'Mini Soccer', 'Padel', 'Tenis Meja'
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +25,7 @@ class OwnerLapanganFormView extends GetView<OwnerLapanganController> {
     final hargaCtrl = TextEditingController(text: args?['harga_per_jam']?.toString());
     final deskripsiCtrl = TextEditingController(text: args?['deskripsi']?.toString());
     final lokasiCtrl = TextEditingController(text: args?['lokasi']?.toString());
-    final selectedJenis = (args?['jenis']?.toString() ?? _jenisOptions.first).obs;
+    final selectedJenis = (args?['jenis_olahraga']?.toString() ?? args?['jenis']?.toString() ?? _jenisOptions.first).obs;
     final selectedStatus = (args?['status'] == true || args == null).obs;
 
     return Scaffold(
@@ -174,9 +180,11 @@ class OwnerLapanganFormView extends GetView<OwnerLapanganController> {
                           ? null
                           : () {
                               if (formKey.currentState!.validate()) {
+                                final String validJenis = selectedJenis.value.isEmpty ? 'Futsal' : selectedJenis.value;
                                 final data = {
                                   'nama': namaCtrl.text.trim(),
-                                  'jenis': selectedJenis.value,
+                                  'jenis_olahraga': validJenis,
+                                  'jenis': validJenis,
                                   'harga_per_jam': hargaCtrl.text.trim(),
                                   'deskripsi': deskripsiCtrl.text.trim().isEmpty ? null : deskripsiCtrl.text.trim(),
                                   'lokasi': lokasiCtrl.text.trim(),
@@ -241,6 +249,19 @@ class OwnerLapanganFormView extends GetView<OwnerLapanganController> {
   }
 
   void _showMapPicker(BuildContext context, TextEditingController lokasiCtrl) {
+    LatLng selectedPoint = const LatLng(-6.9175, 107.6191);
+    
+    if (lokasiCtrl.text.isNotEmpty) {
+      final parts = lokasiCtrl.text.split(',');
+      if (parts.length == 2) {
+        final lat = double.tryParse(parts[0].trim());
+        final lng = double.tryParse(parts[1].trim());
+        if (lat != null && lng != null) {
+          selectedPoint = LatLng(lat, lng);
+        }
+      }
+    }
+
     Get.dialog(
       Dialog(
         backgroundColor: const Color(0xFF1E293B),
@@ -253,7 +274,8 @@ class OwnerLapanganFormView extends GetView<OwnerLapanganController> {
               const Text('Pilih Titik Lokasi', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
               const SizedBox(height: 16),
               Container(
-                height: 200,
+                height: 300,
+                clipBehavior: Clip.hardEdge,
                 decoration: BoxDecoration(
                   color: const Color(0xFF334155),
                   borderRadius: BorderRadius.circular(12),
@@ -262,15 +284,25 @@ class OwnerLapanganFormView extends GetView<OwnerLapanganController> {
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
-                    GridView.builder(
-                      physics: const NeverScrollableScrollPhysics(),
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 5),
-                      itemCount: 25,
-                      itemBuilder: (_, __) => Container(
-                        decoration: BoxDecoration(
-                          border: Border.all(color: const Color(0xFF475569).withOpacity(0.3)),
+                    FlutterMap(
+                      options: MapOptions(
+                        initialCenter: selectedPoint,
+                        initialZoom: 15.0,
+                        interactionOptions: const InteractionOptions(
+                          flags: InteractiveFlag.all,
                         ),
+                        onPositionChanged: (position, hasGesture) {
+                          if (position.center != null) {
+                            selectedPoint = position.center!;
+                          }
+                        },
                       ),
+                      children: [
+                        TileLayer(
+                          urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                          userAgentPackageName: 'com.tinggalklik.app',
+                        ),
+                      ],
                     ),
                     const Icon(Icons.location_on, color: Color(0xFFEF4444), size: 48),
                     Positioned(
@@ -295,7 +327,7 @@ class OwnerLapanganFormView extends GetView<OwnerLapanganController> {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () {
-                    lokasiCtrl.text = 'Jl. Stadion Utama No. 12, Titik Koordinat: -6.1751, 106.8272';
+                    lokasiCtrl.text = '${selectedPoint.latitude}, ${selectedPoint.longitude}';
                     Get.back();
                   },
                   style: ElevatedButton.styleFrom(
