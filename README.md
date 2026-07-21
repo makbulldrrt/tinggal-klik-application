@@ -52,9 +52,9 @@ Struktur tabel utama pada database `db_tinggal_klik`:
 
 ### 1. Setup Backend (Laravel)
 
-```bash
+
 # Clone repositori backend
-git clone [https://github.com/username-anda/tinggal_klik_backend.git](https://github.com/username-anda/tinggal_klik_backend.git)
+git clone [https://github.com/makbulldrrt/tinggal_klik_backend.git](https://github.com/makbulldrrt/tinggal_klik_backend.git)
 cd tinggal_klik_backend
 
 # Install dependensi PHP
@@ -102,4 +102,7 @@ lib/
 │   └── shared/                # Widget & Komponen Reusable
 └── main.dart                  # Entry point aplikasi & konfigurasi rute
 Tim Pengembang
-Makbul Insan Darojat - Fullstack Developer
+Makbul Insan Darojat - Fullstack Developer (Project Manager)
+Raihan Hafidz Putra P - Database Administrator
+Ahmad Mahdi - Frontend Integration
+Decky Registian - Backend Developer
