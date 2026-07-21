@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
@@ -7,7 +8,17 @@ class AuthController extends GetxController {
   final ApiService _apiService = Get.find<ApiService>();
   final GetStorage _box = GetStorage();
 
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
+
   final isLoading = false.obs;
+
+  @override
+  void onClose() {
+    emailController.dispose();
+    passwordController.dispose();
+    super.onClose();
+  }
 
   Future<void> register(
     String name,
@@ -41,12 +52,24 @@ class AuthController extends GetxController {
     }
   }
 
-  Future<void> login(String email, String password) async {
+  Future<void> login([String? email, String? password]) async {
+    final emailVal = (email != null && email.isNotEmpty) ? email : emailController.text.trim();
+    final passwordVal = (password != null && password.isNotEmpty) ? password : passwordController.text;
+
+    if (emailVal.isEmpty) {
+      Get.snackbar('Error', 'Email tidak boleh kosong.');
+      return;
+    }
+    if (passwordVal.isEmpty) {
+      Get.snackbar('Error', 'Kata sandi tidak boleh kosong.');
+      return;
+    }
+
     isLoading.value = true;
     try {
       final response = await _apiService.dio.post(
         '/auth/login',
-        data: {'email': email, 'password': password},
+        data: {'email': emailVal, 'password': passwordVal},
       );
 
       final token = response.data['token'] as String;
