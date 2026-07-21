@@ -47,7 +47,7 @@ Struktur tabel utama pada database `db_tinggal_klik`:
 * `withdrawals`: Menyimpan data riwayat pencairan saldo oleh owner.
 
 ---
-
+```bash
 ## Panduan Instalasi
 
 ### 1. Setup Backend (Laravel)
