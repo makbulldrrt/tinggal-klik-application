@@ -41,15 +41,15 @@ class OwnerDashboardView extends GetView<OwnerDashboardController> {
     final currencyFormatter = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFFFFFF),
+      backgroundColor: const Color(0xFF0F172A),
       appBar: AppBar(
-        backgroundColor: const Color(0xFFFFFFFF),
+        backgroundColor: const Color(0xFF0F172A),
         elevation: 0,
         centerTitle: false,
         title: const Text(
           "Dashboard",
           style: TextStyle(
-            color: Color(0xFF1D1D1F),
+            color: Color(0xFFF8FAFC),
             fontSize: 28,
             fontWeight: FontWeight.w600,
             letterSpacing: -0.4,
@@ -66,10 +66,11 @@ class OwnerDashboardView extends GetView<OwnerDashboardController> {
         (data) {
           final double totalRevenueNum = double.tryParse((data?['total_pendapatan'] ?? 0).toString()) ?? 0;
           final revenueStr = currencyFormatter.format(totalRevenueNum);
-          final int countNum = int.tryParse((data?['total_lapangan'] ?? 0).toString()) ?? 0;
+          final int countNum = int.tryParse((data?['total_lapangan'] ?? data?['total_lapangans'] ?? data?['lapangan_count'] ?? 0).toString()) ?? 0;
           final count = countNum.toString();
           final chartData = List<dynamic>.from(data?['analytics'] as List? ?? []);
           final recentTransactions = List<dynamic>.from(data?['recent_transactions'] as List? ?? []);
+          final recentWithdrawals = List<dynamic>.from(data?['recent_withdrawals'] as List? ?? []);
 
           return RefreshIndicator(
             color: const Color(0xFF0066CC),
@@ -103,7 +104,7 @@ class OwnerDashboardView extends GetView<OwnerDashboardController> {
                   const Text(
                     "Revenue Distribution",
                     style: TextStyle(
-                      color: Color(0xFF1D1D1F),
+                      color: Color(0xFFF8FAFC),
                       fontSize: 21,
                       fontWeight: FontWeight.w600,
                       letterSpacing: -0.2,
@@ -115,13 +116,14 @@ class OwnerDashboardView extends GetView<OwnerDashboardController> {
                       height: 160,
                       width: double.infinity,
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF5F5F7),
+                        color: const Color(0xFF1E293B),
                         borderRadius: BorderRadius.circular(18),
+                        border: Border.all(color: const Color(0xFF334155), width: 1),
                       ),
                       child: const Center(
                         child: Text(
                           "Belum ada data distribusi.",
-                          style: TextStyle(color: Color(0xFF7A7A7A), fontSize: 14),
+                          style: TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
                         ),
                       ),
                     )
@@ -130,8 +132,9 @@ class OwnerDashboardView extends GetView<OwnerDashboardController> {
                       height: 280,
                       padding: const EdgeInsets.all(24),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF5F5F7),
+                        color: const Color(0xFF1E293B),
                         borderRadius: BorderRadius.circular(18),
+                        border: Border.all(color: const Color(0xFF334155), width: 1),
                       ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -143,7 +146,7 @@ class OwnerDashboardView extends GetView<OwnerDashboardController> {
                   const Text(
                     "Transaksi Terbaru",
                     style: TextStyle(
-                      color: Color(0xFF1D1D1F),
+                      color: Color(0xFFF8FAFC),
                       fontSize: 21,
                       fontWeight: FontWeight.w600,
                       letterSpacing: -0.2,
@@ -151,7 +154,7 @@ class OwnerDashboardView extends GetView<OwnerDashboardController> {
                   ),
                   const SizedBox(height: 16),
                   if (recentTransactions.isEmpty)
-                    const Text("Belum ada transaksi.", style: TextStyle(color: Color(0xFF7A7A7A)))
+                    const Text("Belum ada transaksi.", style: TextStyle(color: Color(0xFF94A3B8)))
                   else
                     ...recentTransactions.map((trx) {
                       final trxMap = trx as Map<String, dynamic>;
@@ -169,9 +172,9 @@ class OwnerDashboardView extends GetView<OwnerDashboardController> {
                           margin: const EdgeInsets.only(bottom: 12),
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFFFFFFF),
+                            color: const Color(0xFF1E293B),
                             borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: const Color(0xFFE0E0E0), width: 1),
+                            border: Border.all(color: const Color(0xFF334155), width: 1),
                           ),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -182,7 +185,7 @@ class OwnerDashboardView extends GetView<OwnerDashboardController> {
                                   Text(
                                     lapangan,
                                     style: const TextStyle(
-                                      color: Color(0xFF1D1D1F),
+                                      color: Color(0xFFF8FAFC),
                                       fontSize: 16,
                                       fontWeight: FontWeight.w600,
                                     ),
@@ -191,7 +194,7 @@ class OwnerDashboardView extends GetView<OwnerDashboardController> {
                                   Text(
                                     "Status: $status",
                                     style: const TextStyle(
-                                      color: Color(0xFF7A7A7A),
+                                      color: Color(0xFF94A3B8),
                                       fontSize: 13,
                                     ),
                                   ),
@@ -207,6 +210,105 @@ class OwnerDashboardView extends GetView<OwnerDashboardController> {
                               ),
                             ],
                           ),
+                        ),
+                      );
+                    }),
+                  const SizedBox(height: 32),
+                  const Text(
+                    "Riwayat Penarikan Saldo",
+                    style: TextStyle(
+                      color: Color(0xFFF8FAFC),
+                      fontSize: 21,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: -0.2,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  if (recentWithdrawals.isEmpty)
+                    const Text("Belum ada penarikan.", style: TextStyle(color: Color(0xFF94A3B8)))
+                  else
+                    ...recentWithdrawals.map((wd) {
+                      final wdMap = wd as Map<String, dynamic>;
+                      final double amount = double.tryParse((wdMap['amount'] ?? 0).toString()) ?? 0;
+                      final status = wdMap['status'] ?? 'pending';
+                      final bank = wdMap['bank_name'] ?? 'Bank';
+                      final account = wdMap['account_number'] ?? '-';
+                      final dateStr = wdMap['created_at'] ?? '';
+                      String formattedDate = dateStr;
+                      if (dateStr.isNotEmpty) {
+                        try {
+                           final dt = DateTime.parse(dateStr);
+                           formattedDate = DateFormat('d MMM yyyy', 'id_ID').format(dt);
+                        } catch(e) {}
+                      }
+
+                      Color badgeColor = const Color(0xFFEAB308);
+                      if (status == 'approved') badgeColor = const Color(0xFF22C55E);
+                      if (status == 'rejected') badgeColor = const Color(0xFFEF4444);
+
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1E293B),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: const Color(0xFF334155), width: 1),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "$bank - $account",
+                                  style: const TextStyle(
+                                    color: Color(0xFFF8FAFC),
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  formattedDate,
+                                  style: const TextStyle(
+                                    color: Color(0xFF94A3B8),
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Text(
+                                  currencyFormatter.format(amount),
+                                  style: const TextStyle(
+                                    color: Color(0xFF0066CC),
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: badgeColor.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(color: badgeColor.withOpacity(0.5)),
+                                  ),
+                                  child: Text(
+                                    status.toString().toUpperCase(),
+                                    style: TextStyle(
+                                      color: badgeColor,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
                       );
                     }),
@@ -227,9 +329,9 @@ class OwnerDashboardView extends GetView<OwnerDashboardController> {
       height: 120,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFFFFF),
+        color: const Color(0xFF1E293B),
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFE0E0E0), width: 1),
+        border: Border.all(color: const Color(0xFF334155), width: 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -238,7 +340,7 @@ class OwnerDashboardView extends GetView<OwnerDashboardController> {
           Text(
             title,
             style: const TextStyle(
-              color: Color(0xFF7A7A7A),
+              color: Color(0xFF94A3B8),
               fontSize: 14,
               fontWeight: FontWeight.w400,
             ),
@@ -248,7 +350,7 @@ class OwnerDashboardView extends GetView<OwnerDashboardController> {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
-              color: const Color(0xFF1D1D1F),
+              color: const Color(0xFFF8FAFC),
               fontSize: revenueFontSize(value),
               fontWeight: FontWeight.w600,
               letterSpacing: -0.5,
@@ -265,16 +367,20 @@ class OwnerDashboardView extends GetView<OwnerDashboardController> {
     final double rawPct = double.tryParse((data['percentage'] ?? 0).toString()) ?? 0.0;
     final double pct = rawPct > 1.0 ? rawPct / 100.0 : rawPct;
     final String label = data['kategori'] ?? data['jenis_olahraga'] ?? data['day'] ?? '';
+    final double totalRevenue = double.tryParse((data['total_revenue'] ?? 0).toString()) ?? 0;
+    final currencyFormatter = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
         Text(
-          "${(pct * 100).toInt()}%",
+          "${(pct * 100).toInt()}%\n${currencyFormatter.format(totalRevenue)}",
+          textAlign: TextAlign.center,
           style: const TextStyle(
             color: Color(0xFF0066CC),
-            fontSize: 12,
+            fontSize: 10,
             fontWeight: FontWeight.w600,
+            height: 1.2,
           ),
         ),
         const SizedBox(height: 4),
@@ -290,7 +396,7 @@ class OwnerDashboardView extends GetView<OwnerDashboardController> {
         Text(
           label,
           style: const TextStyle(
-            color: Color(0xFF1D1D1F),
+            color: Color(0xFFF8FAFC),
             fontSize: 12,
             fontWeight: FontWeight.w600,
           ),

@@ -1,8 +1,9 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'package:get/get.dart' hide FormData, MultipartFile;
 import '../services/lapangan_service.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../dashboard/controllers/owner_dashboard_controller.dart';
 
 class OwnerLapanganController extends GetxController with StateMixin<List<dynamic>> {
   final LapanganService _service = LapanganService();
@@ -129,10 +130,14 @@ class OwnerLapanganController extends GetxController with StateMixin<List<dynami
 
       await _service.createLapangan(formData);
       formStatus.value = RxStatus.success();
+      pickedImage.value = null;
       Get.back();
       _page = 1;
       fetchList();
-      Get.snackbar('Berhasil', 'Lapangan berhasil ditambahkan.');
+      if (Get.isRegistered<OwnerDashboardController>()) {
+        Get.find<OwnerDashboardController>().fetchDashboardData();
+      }
+      Get.snackbar('Sukses', 'Lapangan berhasil ditambahkan', backgroundColor: Colors.green, colorText: Colors.white);
     } on DioException catch (e) {
       formStatus.value = RxStatus.error(e.response?.data['message']?.toString() ?? 'Gagal menyimpan data.');
       Get.snackbar('Error', formStatus.value.errorMessage ?? '');
@@ -155,10 +160,14 @@ class OwnerLapanganController extends GetxController with StateMixin<List<dynami
 
       await _service.updateLapangan(id, formData);
       formStatus.value = RxStatus.success();
+      pickedImage.value = null;
       Get.back();
       _page = 1;
       fetchList();
-      Get.snackbar('Berhasil', 'Lapangan berhasil diperbarui.');
+      if (Get.isRegistered<OwnerDashboardController>()) {
+        Get.find<OwnerDashboardController>().fetchDashboardData();
+      }
+      Get.snackbar('Sukses', 'Lapangan berhasil diperbarui', backgroundColor: Colors.green, colorText: Colors.white);
     } on DioException catch (e) {
       formStatus.value = RxStatus.error(e.response?.data['message']?.toString() ?? 'Gagal memperbarui data.');
       Get.snackbar('Error', formStatus.value.errorMessage ?? '');
@@ -171,7 +180,10 @@ class OwnerLapanganController extends GetxController with StateMixin<List<dynami
       await _service.deleteLapangan(id);
       _page = 1;
       fetchList();
-      Get.snackbar('Berhasil', 'Lapangan berhasil dihapus.');
+      if (Get.isRegistered<OwnerDashboardController>()) {
+        Get.find<OwnerDashboardController>().fetchDashboardData();
+      }
+      Get.snackbar('Sukses', 'Lapangan berhasil dihapus', backgroundColor: Colors.green, colorText: Colors.white);
     } on DioException catch (e) {
       change(state, status: RxStatus.error(e.response?.data['message']?.toString() ?? 'Gagal menghapus data.'));
       Get.snackbar('Error', e.response?.data['message']?.toString() ?? 'Gagal menghapus data.');
