@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:device_preview/device_preview.dart';
 import 'app/data/services/api_service.dart';
 import 'app/modules/auth/controllers/auth_controller.dart';
 import 'app/modules/auth/views/login_view.dart';
@@ -34,7 +36,12 @@ void main() async {
   await GetStorage.init();
   Get.put(ApiService(), permanent: true);
   Get.put(AuthController(), permanent: true);
-  runApp(const MyApp());
+  runApp(
+    DevicePreview(
+      enabled: !kReleaseMode,
+      builder: (context) => const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -43,6 +50,9 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
+      useInheritedMediaQuery: true,
+      locale: DevicePreview.locale(context),
+      builder: DevicePreview.appBuilder,
       title: 'Tinggal Klik',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(

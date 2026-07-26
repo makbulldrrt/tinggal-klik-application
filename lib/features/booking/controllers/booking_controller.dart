@@ -8,7 +8,7 @@ class BookingController extends GetxController with StateMixin<List<dynamic>>, W
   final BookingService _service = BookingService();
 
   final selectedDate = ''.obs;
-  final availableSlots = <String>[].obs;
+  final bookedSlots = <String>[].obs;
   final selectedSlots = <String>[].obs;
   final bookingHistory = <dynamic>[].obs;
   final slotStatus = Rx<RxStatus>(RxStatus.empty());
@@ -43,7 +43,7 @@ class BookingController extends GetxController with StateMixin<List<dynamic>>, W
     try {
       final res = await _service.getAvailability(lapanganId, tanggal);
       final booked = List<String>.from(res.data as List);
-      availableSlots.value = booked;
+      bookedSlots.value = booked;
       slotStatus.value = RxStatus.success();
     } on DioException catch (e) {
       slotStatus.value = RxStatus.error(

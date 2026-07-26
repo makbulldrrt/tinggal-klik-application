@@ -144,52 +144,68 @@ class _SlotGrid extends GetView<BookingController> {
         itemCount: _slots.length,
         itemBuilder: (_, i) {
           final jam = _slots[i];
-          final isBooked = controller.availableSlots.contains(jam);
+          final isBooked = controller.bookedSlots.contains(jam);
           final isSelected = controller.selectedSlots.contains(jam);
 
-          Color bgColor;
-          Color textColor;
-          Color borderColor;
+          // ── STATE COLORS ──────────────────────────────────────────────
+          final Color bgColor;
+          final Color textColor;
+          final Color borderColor;
 
           if (isBooked) {
-            bgColor = const Color(0xFF1E293B);
-            textColor = const Color(0xFF475569);
-            borderColor = const Color(0xFF1E293B);
+            bgColor = const Color(0xFF7F1D1D);
+            textColor = const Color(0xFFFCA5A5);
+            borderColor = const Color(0xFFDC2626);
           } else if (isSelected) {
-            bgColor = const Color(0xFF6366F1);
+            bgColor = const Color(0xFF15803D);
             textColor = Colors.white;
-            borderColor = const Color(0xFF6366F1);
+            borderColor = const Color(0xFF4ADE80);
           } else {
             bgColor = const Color(0xFF1E293B);
-            textColor = Colors.white;
+            textColor = const Color(0xFF94A3B8);
             borderColor = const Color(0xFF334155);
           }
 
           return GestureDetector(
-            onTap: isBooked ? null : () => controller.toggleSlot(jam),
+            onTap: isBooked
+                ? () => Get.snackbar(
+                      'Tidak Tersedia',
+                      'Jam $jam sudah dibooking',
+                      snackPosition: SnackPosition.BOTTOM,
+                      backgroundColor: const Color(0xFF7F1D1D),
+                      colorText: const Color(0xFFFCA5A5),
+                      margin: const EdgeInsets.all(16),
+                      borderRadius: 12,
+                      duration: const Duration(seconds: 2),
+                      icon: const Icon(Icons.block, color: Color(0xFFFCA5A5), size: 18),
+                    )
+                : () => controller.toggleSlot(jam),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 180),
               decoration: BoxDecoration(
                 color: bgColor,
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: borderColor),
+                border: Border.all(color: borderColor, width: isSelected ? 1.5 : 1.0),
               ),
               child: Stack(
                 alignment: Alignment.center,
                 children: [
-                  Text(jam,
-                      style: TextStyle(
-                          color: textColor,
-                          fontSize: 13,
-                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal)),
+                  Text(
+                    jam,
+                    style: TextStyle(
+                      color: textColor,
+                      fontSize: 13,
+                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                    ),
+                  ),
                   if (isBooked)
                     Positioned.fill(
                       child: Container(
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(10),
-                          color: const Color(0xFF0F172A).withValues(alpha: 0.5),
+                          color: Colors.black.withValues(alpha: 0.25),
                         ),
-                        child: const Icon(Icons.block, color: Color(0xFF475569), size: 16),
+                        child: const Icon(Icons.lock_outline, color: Color(0xFFFCA5A5), size: 14),
                       ),
                     ),
                 ],

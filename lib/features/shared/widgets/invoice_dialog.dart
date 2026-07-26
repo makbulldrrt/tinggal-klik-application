@@ -11,14 +11,16 @@ class InvoiceDialog {
     final createdAt = item['created_at']?.toString() ?? '-';
 
     final customerName = item['user']?['name']?.toString() ??
+        item['pelanggan_name']?.toString() ??
+        item['user_name']?.toString() ??
         item['pelanggan']?['name']?.toString() ??
         item['pemesanan']?['user']?['name']?.toString() ??
-        '-';
+        'Pelanggan';
 
     final lapangan = item['lapangan'] ?? item['pemesanan']?['lapangan'];
     final lapanganName = lapangan?['nama_lapangan']?.toString() ?? lapangan?['nama']?.toString() ?? '-';
 
-    final tanggal = (item['tanggal'] ?? item['tanggal_main'] ?? item['pemesanan']?['tanggal_main'])?.toString() ?? '-';
+    final tanggal = (item['tanggal_pesan'] ?? item['tanggal'] ?? item['tanggal_main'] ?? item['pemesanan']?['tanggal_main'] ?? item['created_at'])?.toString() ?? '-';
     final jamMulai = (item['jam_mulai'] ?? item['pemesanan']?['jam_mulai'])?.toString() ?? '-';
     final jamSelesai = (item['jam_selesai'] ?? item['pemesanan']?['jam_selesai'])?.toString() ?? '-';
     final hargaPerJam = (lapangan?['harga_per_jam'] ?? item['pemesanan']?['lapangan']?['harga_per_jam'])?.toString() ?? '-';
